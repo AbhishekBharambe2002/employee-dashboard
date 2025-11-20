@@ -79,9 +79,6 @@ Frontend Configuration (frontend/.env)
 Create a file named .env in the root of the frontend directory:
 
 REACT_APP_API_BASE_URL="http://localhost:5000"
-# Note: If your Country/State/City API requires a key, add it here, e.g.:
-# REACT_APP_LOCATION_API_KEY="your_api_key"
-
 
 2. Running the Backend
 
