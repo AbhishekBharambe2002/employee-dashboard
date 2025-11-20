@@ -2,6 +2,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import { Box, Button } from "@mui/material";
 
+// Dashboard
+import Dashboard from "./components/Dashboard";
+
 // Department
 import DepartmentsPage from "./pages/DepartmentsPage";
 import DepartmentCreate from "./pages/DepartmentCreate";
@@ -16,14 +19,19 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <Router>
+
         <Box
           component="nav"
           display="flex"
           justifyContent="center"
           gap={2}
           p={2}
-          bgcolor="#f5f5f5"
+          bgcolor="#000000ff"
         >
+          <Button component={Link} to="/" variant="contained" color="success">
+            Dashboard
+          </Button>
+
           <Button
             component={Link}
             to="/departments"
@@ -32,6 +40,7 @@ function App() {
           >
             Departments
           </Button>
+
           <Button
             component={Link}
             to="/employees"
@@ -42,7 +51,12 @@ function App() {
           </Button>
         </Box>
 
+        {/* ROUTES */}
         <Routes>
+          {/* Dashboard Route */}
+          <Route path="/" element={<Dashboard />} />
+
+          {/* Departments */}
           <Route
             path="/departments"
             element={
@@ -53,6 +67,7 @@ function App() {
             }
           />
 
+          {/* Employees */}
           <Route
             path="/employees"
             element={

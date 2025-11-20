@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
-import { Button, TextField, MenuItem, Box } from "@mui/material";
+import { Button, TextField, MenuItem, Box, useMediaQuery } from "@mui/material";
 import axios from "axios";
+import { useTheme } from "@mui/material/styles";
 import { employeeApi } from "../api/employeeApi";
 
 interface Props {
@@ -14,7 +15,12 @@ const EmployeeSchema = Yup.object().shape({
     lastName: Yup.string().required("Required"),
     email: Yup.string().email("Invalid email").required("Required"),
     jobTitle: Yup.string().required("Required"),
-    department: Yup.string().required("Required"),
+    department: Yup.object()
+        .shape({
+            _id: Yup.string().required(),
+            name: Yup.string().required(),
+        })
+        .required("Required"),
     country: Yup.string().required("Required"),
     state: Yup.string().required("Required"),
     city: Yup.string().required("Required"),
@@ -28,7 +34,6 @@ const EmployeeForm: React.FC<Props> = ({ onSuccess }) => {
     const [selectedCountry, setSelectedCountry] = useState("");
 
     useEffect(() => {
-        // Load departments using env variable
         axios
             .get(`${process.env.REACT_APP_API_BASE_URL}/api/v1/departments`)
             .then((res) => setDepartments(res.data));
@@ -54,7 +59,8 @@ const EmployeeForm: React.FC<Props> = ({ onSuccess }) => {
             })
             .then((res) => setCities(res.data.data));
     };
-
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
     return (
         <Formik
             initialValues={{
@@ -62,7 +68,7 @@ const EmployeeForm: React.FC<Props> = ({ onSuccess }) => {
                 lastName: "",
                 email: "",
                 jobTitle: "",
-                department: "",
+                department: { _id: "", name: "" },
                 supervisor: undefined,
                 country: "",
                 state: "",
@@ -70,16 +76,24 @@ const EmployeeForm: React.FC<Props> = ({ onSuccess }) => {
             }}
             validationSchema={EmployeeSchema}
             onSubmit={async (values, { resetForm }) => {
-                const payload = { ...values };
-                if (!payload.supervisor) delete payload.supervisor; // don't send empty value
+                const payload = values;
+
+                if (!payload.supervisor) delete (payload as any).supervisor;
+
                 await employeeApi.create(payload);
                 resetForm();
                 onSuccess?.();
             }}
+
         >
             {({ errors, touched, handleChange }) => (
                 <Form>
-                    <Box display="flex" flexDirection="column" gap={3} maxWidth="600px">
+                    <Box
+                        display="grid"
+                        gap={3}
+                        maxWidth="900px"
+                        gridTemplateColumns={isMobile ? "1fr" : "1fr 1fr"}
+                    >
                         {/* First Name */}
                         <TextField
                             name="firstName"
@@ -121,7 +135,18 @@ const EmployeeForm: React.FC<Props> = ({ onSuccess }) => {
                         />
 
                         {/* Department */}
-                        <TextField select name="department" label="Department" fullWidth onChange={handleChange}>
+                        <TextField
+                            select
+                            name="department"
+                            label="Department"
+                            fullWidth
+                            onChange={(e) => {
+                                const dep = departments.find((d) => d._id === e.target.value);
+                                handleChange({
+                                    target: { name: "department", value: dep },
+                                });
+                            }}
+                        >
                             {departments.map((dep) => (
                                 <MenuItem key={dep._id} value={dep._id}>
                                     {dep.name}
@@ -166,7 +191,13 @@ const EmployeeForm: React.FC<Props> = ({ onSuccess }) => {
                         </TextField>
 
                         {/* City */}
-                        <TextField select name="city" label="City" fullWidth onChange={handleChange}>
+                        <TextField
+                            select
+                            name="city"
+                            label="City"
+                            fullWidth
+                            onChange={handleChange}
+                        >
                             {cities.map((c) => (
                                 <MenuItem key={c} value={c}>
                                     {c}
@@ -174,10 +205,18 @@ const EmployeeForm: React.FC<Props> = ({ onSuccess }) => {
                             ))}
                         </TextField>
 
-                        {/* Submit */}
-                        <Button type="submit" variant="contained" color="primary" fullWidth>
-                            Save Employee
-                        </Button>
+                        {/* Submit Button — full width on both columns */}
+                        <Box gridColumn={isMobile ? "span 1" : "span 2"}>
+                            <Button
+                                type="submit"
+                                variant="contained"
+                                color="primary"
+                                fullWidth
+                                sx={{ mt: 1 }}
+                            >
+                                Save Employee
+                            </Button>
+                        </Box>
                     </Box>
                 </Form>
             )}

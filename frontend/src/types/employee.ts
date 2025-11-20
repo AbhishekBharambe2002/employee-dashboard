@@ -1,11 +1,14 @@
+import { Department } from "./department";
+
+
 export interface Employee {
     _id?: string;
     firstName: string;
     lastName: string;
     email: string;
     jobTitle: string;
-    department: string;   // departmentId
-    supervisor?: string;  // employeeId (self-reference)
+    department: Department;
+    supervisor?: string;
     country: string;
     state: string;
     city: string;
